@@ -5,6 +5,12 @@
 *.so
 *.dylib
 
+# macOS
+.DS_Store
+
+# Log files
+*.log
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -13,3 +19,10 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Go workspace file
+go.work
+
+*.env
+bin/
+build/
