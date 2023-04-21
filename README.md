@@ -27,7 +27,13 @@ git clone https://github.com/jveillet/demainilpleut-opengraph.git
 Build the binary.
 
 ```sh
-go build -o bin/opengraph
+go build -o dist/opengraph
+```
+
+Or run via source.
+
+```sh
+go run main.go
 ```
 
 ## Configuration
