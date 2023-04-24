@@ -8,7 +8,6 @@ on:
       - created
 
 env:
-  CMD_PATH: ./dist
   BINARY_NAME: opengraph
 
 # jobs
@@ -37,7 +36,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
-        project_path: "${{ env.CMD_PATH }}"
         binary_name: "${{ env.BINARY_NAME }}"
         overwrite: true
         ldflags: -X "main.appVersion=${{ env.APP_VERSION }}" -X "main.buildTime=${{ env.BUILD_TIME }}" -X main.gitCommit=${{ github.sha }} -X main.gitRef=${{ github.ref }}
