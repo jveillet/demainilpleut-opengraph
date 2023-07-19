@@ -1,4 +1,4 @@
-# workflow name
+# Creates binaries for each platform and attach them to a release
 name: release
 
 # on events
