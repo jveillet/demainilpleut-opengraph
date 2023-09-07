@@ -11,7 +11,7 @@ By moving rewriting this tool with Go, I can generate a binary and let it run fo
 
 ## Prerequisites
 
-* go 1.20
+* go >= 1.20
 
 Fonts are available in the `fonts/` directory (Arial by default).
 Image templates are in the `templates/` directory.
@@ -20,14 +20,20 @@ Image templates are in the `templates/` directory.
 
 Clone the repository.
 
-```sh
+```bash
 git clone https://github.com/jveillet/demainilpleut-opengraph.git
 ```
 
 Build the binary.
 
-```sh
+```bash
 go build -o dist/opengraph
+```
+
+Building without cgo (disables calling C code (import "C"))
+
+```bash
+CGO_ENABLED=0 go build -o dist/opengraph
 ```
 
 Or run via source.
@@ -40,14 +46,13 @@ go run main.go
 
 Create a .env file at the root of the project, then add the two needed variables.
 
-```sh
+```bash
 touch .env && OG_IMG_PATH=templates >> .env && OG_FONTS_PATH=fonts >> .env
-
 ```
 
 ## Usage
 
-```sh
+```bash
 NAME:
    Opengraph - demainilpleut's OpenGraph images generation
 
@@ -55,7 +60,7 @@ USAGE:
    Opengraph [global options] command [command options] [arguments...]
 
 VERSION:
-   1.0.1
+   1.0.2
 
 COMMANDS:
    generate, g  Generate an OpenGraph image
@@ -68,7 +73,7 @@ GLOBAL OPTIONS:
 
 ### Generate
 
-```sh
+```bash
 NAME:
    Opengraph generate - Generate an OpenGraph image
 

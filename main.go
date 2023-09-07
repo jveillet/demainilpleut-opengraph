@@ -44,7 +44,7 @@ func main() {
 	app := &cli.App{
 		Name:    "Opengraph",
 		Usage:   "demainilpleut's OpenGraph images generation",
-		Version: "1.0.1",
+		Version: "1.0.2",
 		Commands: []*cli.Command{
 			{
 				Name:    "generate",
