@@ -19,28 +19,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-package main
+package cmd
 
 import (
-	"log"
 	"os"
 
-	"github.com/joho/godotenv"
-	"github.com/jveillet/demainilpleut-opengraph/cmd"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	env := os.Getenv("BRIDGETOWN_ENV")
-	if env == "" {
-		env = "development"
-	}
+// rootCmd represents the base command when called without any subcommands
+var rootCmd = &cobra.Command{
+	Use:   "opengraph",
+	Short: "demainilpleut's OpenGraph images generation",
+	Long:  `A CLI tool to manipulate opengraph images for demainilpleut.dev`,
+}
 
-	if env == "development" {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatal("Error loading .env file")
-		}
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		os.Exit(1)
 	}
+}
 
-	cmd.Execute()
+func init() {
+	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
