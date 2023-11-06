@@ -7,14 +7,14 @@ It is a cli tool written in Go that can be called from the main project to gener
 This project was born out of the frustration of doing a similar thing with a node script, that was using a lot of dependecies, constantly
 updated and breaking my build.
 
-By moving rewriting this tool with Go, I can generate a binary and let it run for YEARS without touching it.
+By rewriting this tool with Go, I can generate a binary and let it run for YEARS without touching it.
 
 ## Prerequisites
 
-* go >= 1.20
+* go >= 1.21
 
-Fonts are available in the `fonts/` directory (Arial by default).
-Image templates are in the `templates/` directory.
+Fonts are available in the `config/fonts/` directory (Arial by default).
+Image templates are in the `config/templates/` directory.
 
 ## Installation
 
@@ -27,13 +27,13 @@ git clone https://github.com/jveillet/demainilpleut-opengraph.git
 Build the binary.
 
 ```bash
-go build -o dist/opengraph
+go build -o opengraph
 ```
 
 Building without cgo (disables calling C code (import "C"))
 
 ```bash
-CGO_ENABLED=0 go build -o dist/opengraph
+CGO_ENABLED=0 go build -o opengraph
 ```
 
 Or run via source.
@@ -47,7 +47,7 @@ go run main.go
 Create a .env file at the root of the project, then add the two needed variables.
 
 ```bash
-touch .env && OG_IMG_PATH=templates >> .env && OG_FONTS_PATH=fonts >> .env
+touch .env && OG_IMG_PATH=config/templates >> .env && OG_FONTS_PATH=config/fonts >> .env
 ```
 
 ## Usage
@@ -60,7 +60,7 @@ USAGE:
    Opengraph [global options] command [command options] [arguments...]
 
 VERSION:
-   1.0.2
+   1.2.0
 
 COMMANDS:
    generate, g  Generate an OpenGraph image
@@ -87,6 +87,20 @@ OPTIONS:
    --labels LABELS, -l LABELS  The post LABELS
    --date DATE, -d DATE        The post DATE in YYYY-MM-DD format
    --help, -h                  show help
+```
+
+**Example:**
+
+Via source
+
+```bash
+go run main.go generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l tag1,tag2,tag3 -t "The quick brown fox jumps over the lazy dog"
+```
+
+Via binary
+
+```bash
+./opengraph generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l tag1,tag2,tag3 -t "The quick brown fox jumps over the lazy dog"
 ```
 
 ## Can I use this ?
