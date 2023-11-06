@@ -14,7 +14,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "print Opengraph version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("opengraph version 1.1.0")
+		fmt.Println("opengraph version 1.2.0")
 	},
 }
 
