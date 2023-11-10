@@ -13,9 +13,6 @@ By rewriting this tool with Go, I can generate a binary and let it run for YEARS
 
 * go >= 1.21
 
-Fonts are available in the `config/fonts/` directory (Arial by default).
-Image templates are in the `config/templates/` directory.
-
 ## Installation
 
 Clone the repository.
@@ -42,51 +39,46 @@ Or run via source.
 go run main.go
 ```
 
-## Configuration
-
-Create a .env file at the root of the project, then add the two needed variables.
-
-```bash
-touch .env && OG_IMG_PATH=config/templates >> .env && OG_FONTS_PATH=config/fonts >> .env
-```
-
 ## Usage
 
 ```bash
-NAME:
-   Opengraph - demainilpleut's OpenGraph images generation
+$ opengraph -h
+A CLI tool to manipulate opengraph images for demainilpleut.dev
 
-USAGE:
-   Opengraph [global options] command [command options] [arguments...]
+Usage:
+  opengraph [command]
 
-VERSION:
-   1.2.0
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  generate    demainilpleut's OpenGraph images generation
+  help        Help about any command
+  version     print Opengraph version
 
-COMMANDS:
-   generate, g  Generate an OpenGraph image
-   help, h      Shows a list of commands or help for one command
+Flags:
+  -h, --help     help for opengraph
+  -t, --toggle   Help message for toggle
 
-GLOBAL OPTIONS:
-   --help, -h     show help
-   --version, -v  print the version
+Use "opengraph [command] --help" for more information about a command.
 ```
 
 ### Generate
 
 ```bash
-NAME:
-   Opengraph generate - Generate an OpenGraph image
+$ opengraph generate -h
+Opengraph is a CLI to generate opengraph images for blog posts.
+it uses the command line arguments to write text on an image template.
 
-USAGE:
-   Opengraph generate [command options] [arguments...]
+Usage:
+  opengraph generate [flags]
 
-OPTIONS:
-   --title TITLE, -t TITLE     The post TITLE
-   --author AUTHOR, -a AUTHOR  The post AUTHOR
-   --file PATH, -f PATH        Save the generated image in PATH
-   --labels LABELS, -l LABELS  The post LABELS
-   --date DATE, -d DATE        The post DATE in YYYY-MM-DD format
-   --help, -h                  show help
+Flags:
+  -a, --author string            post AUTHOR
+  -b, --background_path string   Background image temmplates path SRC
+  -d, --date string              post DATE in YYYY-MM-DD format
+  -o, --output string            output FILE
+  -h, --help                     help for generate
+  -l, --logo_path string         Logo image path SRC
+  -t, --title string             post TITLE
 ```
 
 **Example:**
@@ -94,17 +86,42 @@ OPTIONS:
 Via source
 
 ```bash
-go run main.go generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l tag1,tag2,tag3 -t "The quick brown fox jumps over the lazy dog"
+go run main.go generate -a johndoe -d 1970-01-01 -o ./dist/out.png -t "The quick brown fox jumps over the lazy dog" -b "dist/background.png" -ol "dist/logo.png"
 ```
 
 Via binary
 
 ```bash
-./opengraph generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l tag1,tag2,tag3 -t "The quick brown fox jumps over the lazy dog"
+./opengraph generate -a johndoe -d 1970-01-01 -o ./dist/out.png -t "The quick brown fox jumps over the lazy dog" -b "dist/background.png" -l "dist/logo.png"
 ```
+
+## Breaking changes
+
+Since version `2.0.0`:
+
+Loading of images path from the environment is deprecated.
+
+Image templates don't rely on environment variables anymore.
+
+You need to pass the full path to the images via the arguments to the `generate` command:
+
+* `-b` for the path to the background image.
+* `-l` for the path to the logo.
+
+As such, images have been removed from the repo and depend now on images external to this tool.
+
+The destination image path is now under the flag `-o` or `--output`.
+
+The `-l` or `--label` is now deprecated (`-l` is now for the logo image).
+
+The Arial font file is now embed in the binary, to cope with systems where the font might not be available.
+
+The only external dependencies needed are now `github.com/spf13/cobra` to create a modern CLI interface.
 
 ## Can I use this ?
 
-Well, it is specifically tailored to run for demainilpleut.dev, so it might not be usefull to you.
+By all means, yes.
 
-But if you want to explore code, or adapt it to your own needs, knock yourself out 😄️.
+It is specifically tailored to run for demainilpleut.dev, so it might not be usefull to you, *as is*.
+
+You are free to fork the project and adapt it to your own needs 😄️.
