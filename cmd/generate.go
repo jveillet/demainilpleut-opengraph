@@ -7,22 +7,20 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"log/slog"
 	"os"
-	"path/filepath"
 	"time"
 
-	"github.com/fogleman/gg"
 	"github.com/spf13/cobra"
+	"github.com/tdewolff/canvas"
+	"github.com/tdewolff/canvas/renderers"
 )
 
 const (
-	LINE_HEIGHT       float64 = 1.5
-	TEXT_MARGIN_RIGHT float64 = 50.0
-	TEXT_MARGIN_TOP           = 120.0
-	AUTHOR_POS_X              = 90
-	AUTHOR_POS_Y              = 560
-	PUBLISHED_ON_TEXT         = "published on"
+	MARGIN_10 float64 = 10.0
 )
+
+var logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
@@ -31,7 +29,10 @@ var generateCmd = &cobra.Command{
 	Long: `Opengraph is a CLI to generate opengraph images for blog posts.
 it uses the command line arguments to write text on an image template.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		generate(title, author, file, labels, date)
+		err := generate(title, author, file, labels, date, backgroundPath, logoPath)
+		if err != nil {
+			log.Fatalf("[ERROR] %v", err)
+		}
 	},
 }
 
@@ -46,6 +47,10 @@ var (
 	labels string
 	// Post date (YYYY-MM-DD format)
 	date string
+	// template background path
+	backgroundPath string
+	// Logo path
+	logoPath string
 )
 
 func init() {
@@ -57,6 +62,8 @@ func init() {
 	generateCmd.Flags().StringVarP(&file, "file", "f", "", "output destination")
 	generateCmd.Flags().StringVarP(&labels, "labels", "l", "", "post LABELS/TAGS")
 	generateCmd.Flags().StringVarP(&date, "date", "d", "", "post DATE in YYYY-MM-DD format")
+	generateCmd.Flags().StringVarP(&backgroundPath, "background_path", "b", "", "Background image temmplates path SRC")
+	generateCmd.Flags().StringVarP(&logoPath, "logo_path", "o", "", "Logo image path SRC")
 
 	// Required flags
 	generateCmd.MarkFlagRequired("title")
@@ -64,113 +71,139 @@ func init() {
 	generateCmd.MarkFlagRequired("file")
 	generateCmd.MarkFlagRequired("labels")
 	generateCmd.MarkFlagRequired("date")
+	generateCmd.MarkFlagRequired("background_path")
+	generateCmd.MarkFlagRequired("logo_path")
 }
 
 // Opengraph image generation.
 // This function generates an image based on a template, and output it in a destination file.
-func generate(title string, author string, filePath string, tags string, date string) error {
-	// Create the canvas context
-	dc := gg.NewContext(1200, 630)
+func generate(title string, author string, filePath string, tags string, date string, backgroundPath string, logoPath string) error {
+	// Create new canvas of dimension 1200 x 630
+	c := canvas.New(1200, 630)
 
-	// Load template
-	backgroundImage, err := gg.LoadImage(fmt.Sprintf("%s/opengraph_image.png", os.Getenv("OG_IMG_PATH")))
+	// Set the context
+	ctx := setContext(c)
+
+	// Load the background image
+	backgroundImage, err := loadImage(backgroundPath)
 	if err != nil {
 		return err
 	}
 
-	// Use the template as a background
-	dc.DrawImage(backgroundImage, 0, 0)
+	// Draw the background image at coordinates
+	ctx.DrawImage(0, 0, backgroundImage, canvas.DPMM(1.0))
 
-	// Add title text
-	fontPath := filepath.Join(os.Getenv("OG_FONTS_PATH"), "Arial.ttf")
-	fontPathBold := filepath.Join(os.Getenv("OG_FONTS_PATH"), "Arial_Bold.ttf")
-
-	if err := dc.LoadFontFace(fontPath, 60); err != nil {
-		return err
-	}
-
-	dc.SetColor(color.Black)
-
-	maxWidth := float64(dc.Width()) - TEXT_MARGIN_RIGHT - TEXT_MARGIN_TOP
-
-	dc.DrawStringWrapped(title, TEXT_MARGIN_RIGHT+1, TEXT_MARGIN_TOP+1, 0, 0, maxWidth, LINE_HEIGHT, gg.AlignLeft)
-
-	titleHeight := calculateStringHeight(dc, title, maxWidth)
-
-	// Add the tag icon
-	tagImage, err := gg.LoadImage(fmt.Sprintf("%s/icon-tag.png", os.Getenv("OG_IMG_PATH")))
+	font, err := loadFonts()
 	if err != nil {
 		return err
 	}
 
-	tagPositionY := int(TEXT_MARGIN_TOP) + int(titleHeight) + 30
+	// Base X and Y position on the canvas
+	var posY float64 = 90
+	var posX float64 = 50
 
-	// Use the template as a background
-	dc.DrawImage(tagImage, int(TEXT_MARGIN_RIGHT), tagPositionY)
-
-	dc.SetColor(color.RGBA{133, 133, 133, 255})
-	if err := dc.LoadFontFace(fontPath, 40); err != nil {
-		return err
-	}
-
-	dc.DrawString(tags, float64(tagImage.Bounds().Dx())+60, float64(tagPositionY)+30)
-
-	// Add author name
-	if err := dc.LoadFontFace(fontPathBold, 30); err != nil {
-		return err
-	}
-
-	dc.SetColor(color.Black)
-	dc.DrawString(author, AUTHOR_POS_X, AUTHOR_POS_Y)
-
-	authorWidth, _ := dc.MeasureString(author)
-
-	// Add "published on"
-	if err := dc.LoadFontFace(fontPath, 30); err != nil {
-		return err
-	}
-
-	publishedOnPositionX := AUTHOR_POS_X + authorWidth + 10
-
-	dc.DrawString(PUBLISHED_ON_TEXT, publishedOnPositionX, AUTHOR_POS_Y)
-
-	publishedOnWidth, _ := dc.MeasureString(PUBLISHED_ON_TEXT)
-
-	datePositionX := publishedOnPositionX + publishedOnWidth + 10
-
-	// Add date locale
-	layoutUS := "January 2, 2006"
-	layoutISO := "2006-01-02"
-	t, _ := time.Parse(layoutISO, date)
-	parsedDate := t.Format(layoutUS)
-
-	dc.DrawString(parsedDate, datePositionX, AUTHOR_POS_Y)
-
-	// Save image
-	err = dc.SavePNG(filePath)
+	// Load the logo image
+	// logoImage, err := loadImage(templatePath, "logo")
+	logoImage, err := loadImage(logoPath)
 	if err != nil {
-		log.Fatalf("[ERROR] The OpenGraph image %s was not created.", filePath)
 		return err
 	}
 
-	log.Printf("The OpenGraph image %s was created.", filePath)
+	// Draw the logo image at coordinates
+	ctx.DrawImage(posX, posY, logoImage, canvas.DPMM(1.0))
+
+	// Move the Y cursor to start the title
+	posY = 150
+
+	// Draw the multiline title text
+	face := font.Face(200.0, canvas.Black, canvas.FontNormal)
+	titleText := canvas.NewTextBox(face, title, 1100, 500, canvas.Left, canvas.Top, 0.0, 0.0)
+	ctx.DrawText(posX, posY, titleText)
+
+	// Move the X and Y cursor for author details
+	posY = 533
+	posX = 280
+
+	// Draw "by" in normal font
+	face = font.Face(80.0, color.RGBA{91, 91, 102, 255}, canvas.FontNormal)
+	byAuhtorLabel := canvas.NewTextBox(face, "by", 200, 50, canvas.Left, canvas.Top, 0.0, 0.0)
+	ctx.DrawText(posX, posY, byAuhtorLabel)
+
+	// Move the X cursor to be next to the "by" label
+	posX = posX + byAuhtorLabel.Bounds().W + MARGIN_10
+
+	// Draw the author name at coordinates
+	face = font.Face(80.0, color.RGBA{91, 91, 102, 255}, canvas.FontBold)
+	authorLabel := canvas.NewTextBox(face, author, 200, 50, canvas.Left, canvas.Top, 0.0, 0.0)
+	ctx.DrawText(posX, posY, authorLabel)
+
+	// Format the date to human readable format (US)
+	// Example: January 2, 2006
+	dateUS := formatDate(date)
+
+	// Draw the "published on" text at coordinates
+	posX = posX + authorLabel.Bounds().W + MARGIN_10
+	face = font.Face(80.0, color.RGBA{91, 91, 102, 255}, canvas.FontNormal)
+	publishedOnText := canvas.NewTextBox(face, fmt.Sprintf("published on %v", dateUS), 800, 50, canvas.Left, canvas.Top, 0.0, 0.0)
+	ctx.DrawText(posX, posY, publishedOnText)
+
+	err = renderers.Write(filePath, c, canvas.DPI(24.0))
+	if err != nil {
+		logger.Error("Failed to create Opengraph image", "path", filePath)
+		return err
+	}
+
+	logger.Info("Opengraph image successfully created", "path", filePath)
 
 	return nil
 }
 
-// Calculate a multiline string height.
-// A maxWidth argument is provided to wrap the string if it goes over a value.
-func calculateStringHeight(dc *gg.Context, text string, maxWidth float64) float64 {
-	lines := dc.WordWrap(text, maxWidth)
-	mls := ""
-	for i, sl := range lines {
-		mls = mls + sl
-		if i != len(lines)-1 {
-			mls = mls + "\n"
-		}
+// Creates a canvas context used to keep drawing state
+func setContext(c *canvas.Canvas) *canvas.Context {
+	ctx := canvas.NewContext(c)
+	ctx.SetCoordSystem(canvas.CartesianIV)
+
+	return ctx
+}
+
+// Load the system fonts
+func loadFonts() (*canvas.FontFamily, error) {
+	font := canvas.NewFontFamily("truetype")
+
+	if err := font.LoadSystemFont("Arial", canvas.FontRegular); err != nil {
+		return nil, err
 	}
 
-	_, textHeight := dc.MeasureMultilineString(mls, LINE_HEIGHT)
+	if err := font.LoadSystemFont("Arial, Bold", canvas.FontBold); err != nil {
+		return nil, err
+	}
 
-	return textHeight
+	return font, nil
+}
+
+// Load local images
+func loadImage(path string) (*canvas.Image, error) {
+	// Load the image data
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a new image object
+	img, err := canvas.NewPNGImage(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return &img, nil
+}
+
+// Formats the date in a human readable way
+// Example: January 2, 2006
+func formatDate(date string) string {
+	layoutUS := "January 2, 2006"
+	layoutISO := "2006-01-02"
+	t, _ := time.Parse(layoutISO, date)
+
+	return t.Format(layoutUS)
 }
