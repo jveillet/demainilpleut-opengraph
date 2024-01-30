@@ -13,8 +13,7 @@ By rewriting this tool with Go, I can generate a binary and let it run for YEARS
 
 * go >= 1.21
 
-Fonts are available in the `config/fonts/` directory (Arial by default).
-Image templates are in the `config/templates/` directory.
+The `Arial` and `Arial, Bold` system fonts are used by default, so make sure they are available on your system.
 
 ## Installation
 
@@ -42,51 +41,47 @@ Or run via source.
 go run main.go
 ```
 
-## Configuration
-
-Create a .env file at the root of the project, then add the two needed variables.
-
-```bash
-touch .env && OG_IMG_PATH=config/templates >> .env && OG_FONTS_PATH=config/fonts >> .env
-```
-
 ## Usage
 
 ```bash
-NAME:
-   Opengraph - demainilpleut's OpenGraph images generation
+$ opengraph -h
+A CLI tool to manipulate opengraph images for demainilpleut.dev
 
-USAGE:
-   Opengraph [global options] command [command options] [arguments...]
+Usage:
+  opengraph [command]
 
-VERSION:
-   1.2.0
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  generate    demainilpleut's OpenGraph images generation
+  help        Help about any command
+  version     print Opengraph version
 
-COMMANDS:
-   generate, g  Generate an OpenGraph image
-   help, h      Shows a list of commands or help for one command
+Flags:
+  -h, --help     help for opengraph
+  -t, --toggle   Help message for toggle
 
-GLOBAL OPTIONS:
-   --help, -h     show help
-   --version, -v  print the version
+Use "opengraph [command] --help" for more information about a command.
 ```
 
 ### Generate
 
 ```bash
-NAME:
-   Opengraph generate - Generate an OpenGraph image
+$ opengraph generate -h
+Opengraph is a CLI to generate opengraph images for blog posts.
+it uses the command line arguments to write text on an image template.
 
-USAGE:
-   Opengraph generate [command options] [arguments...]
+Usage:
+  opengraph generate [flags]
 
-OPTIONS:
-   --title TITLE, -t TITLE     The post TITLE
-   --author AUTHOR, -a AUTHOR  The post AUTHOR
-   --file PATH, -f PATH        Save the generated image in PATH
-   --labels LABELS, -l LABELS  The post LABELS
-   --date DATE, -d DATE        The post DATE in YYYY-MM-DD format
-   --help, -h                  show help
+Flags:
+  -a, --author string            post AUTHOR
+  -b, --background_path string   Background image temmplates path SRC
+  -d, --date string              post DATE in YYYY-MM-DD format
+  -f, --file string              output destination
+  -h, --help                     help for generate
+  -l, --labels string            post LABELS/TAGS
+  -o, --logo_path string         Logo image path SRC
+  -t, --title string             post TITLE
 ```
 
 **Example:**
@@ -94,14 +89,31 @@ OPTIONS:
 Via source
 
 ```bash
-go run main.go generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l tag1,tag2,tag3 -t "The quick brown fox jumps over the lazy dog"
+go run main.go generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l "tag1, tag2, tag3" -t "The quick brown fox jumps over the lazy dog" -b "dist/background.png" -o "dist/logo.png"
 ```
 
 Via binary
 
 ```bash
-./opengraph generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l tag1,tag2,tag3 -t "The quick brown fox jumps over the lazy dog"
+./opengraph generate -a johndoe -d 1970-01-01 -f ./dist/out.png -l "tag1, tag2, tag3" -t "The quick brown fox jumps over the lazy dog" -b "dist/background.png" -o "dist/logo.png"
 ```
+
+## Breaking changes
+
+Since version `2.0.0`:
+
+Loading of images path from the environment is deprecated.
+
+Image templates doesn't rely on environment variables anymore.
+
+You need to pass the full path to the images via the arguments to the `generate` command:
+
+* `-b` for the path to the background image.
+* `-o` for the path to the logo.
+
+As such, images have been removed from the repo and depend now on images external to this tool.
+
+Using font files from the `config/` directory is deprecated, this tool uses the available System Fonts now.
 
 ## Can I use this ?
 
