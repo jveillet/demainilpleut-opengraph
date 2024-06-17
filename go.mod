@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/fogleman/gg v1.3.0
 	github.com/joho/godotenv v1.5.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 )
 
 require (
