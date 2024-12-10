@@ -9,7 +9,6 @@ import (
 	"image"
 	"image/png"
 	"log"
-	"log/slog"
 	"os"
 	"time"
 
@@ -18,8 +17,6 @@ import (
 	dcanvas "github.com/jveillet/demainilpleut-opengraph/pkg"
 	"github.com/spf13/cobra"
 )
-
-var logger = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 // generateCmd represents the generate command
 var generateCmd = &cobra.Command{
@@ -83,7 +80,8 @@ func generate(title string, author string, output string, date string, backgroun
 
 	backgroundImage, err := loadImage(backgroundPath)
 	if err != nil {
-		logger.Error("failed to load background image", "error", err)
+		log.Println("failed to load background image")
+		log.Println("details : ", err)
 		return err
 	}
 
@@ -93,7 +91,8 @@ func generate(title string, author string, output string, date string, backgroun
 	// Load the logo image
 	logoImage, err := loadImage(logoPath)
 	if err != nil {
-		logger.Error("failed to load logo image", "error", err)
+		log.Println("failed to load logo image")
+		log.Println("details : ", err)
 		return err
 	}
 
@@ -103,7 +102,8 @@ func generate(title string, author string, output string, date string, backgroun
 	// Load the system font "Arial"
 	font, err := loadFont()
 	if err != nil {
-		logger.Error("failed to load font", "error", err)
+		log.Println("failed to load font")
+		log.Println("details : ", err)
 		return err
 	}
 
@@ -122,7 +122,8 @@ func generate(title string, author string, output string, date string, backgroun
 	// Draw the multiline title text
 	err = c.DrawMultilineString(50, 200, title)
 	if err != nil {
-		logger.Error("failed to draw multiline title", "error", err)
+		log.Println("failed to draw multiline title")
+		log.Println("details : ", err)
 		return err
 	}
 
@@ -139,17 +140,21 @@ func generate(title string, author string, output string, date string, backgroun
 
 	err = c.DrawString(authorX, c.Image().Bounds().Dy()-50, authorLine)
 	if err != nil {
-		logger.Error("failed to draw author line", "error", err)
+		log.Println("failed to draw author line")
+		log.Println("details : ", err)
 		return err
 	}
 
 	err = saveImage(output, c.Image())
 	if err != nil {
-		logger.Error("Failed to create Opengraph image", "path", output)
+		log.Println("failed to create opengraph image")
+		log.Println("path : ", output)
+		log.Println("details : ", err)
 		return err
 	}
 
-	logger.Info("Opengraph image successfully created", "path", output)
+	log.Println("opengraph image successfully created")
+	log.Println("path : ", output)
 
 	return nil
 }

@@ -86,7 +86,7 @@ Flags:
 Via source
 
 ```bash
-go run main.go generate -a johndoe -d 1970-01-01 -o ./dist/out.png -t "The quick brown fox jumps over the lazy dog" -b "dist/background.png" -ol "dist/logo.png"
+go run main.go generate -a johndoe -d 1970-01-01 -o ./dist/out.png -t "The quick brown fox jumps over the lazy dog" -b "dist/background.png" -l "dist/logo.png"
 ```
 
 Via binary
