@@ -7,11 +7,13 @@ on: [push]
 # jobs
 jobs:
   govulncheck_job:
+      permissions:
+        contents: read  # for govulncheck to read the repository contents
       runs-on: ubuntu-latest
       name: Run govulncheck
       steps:
         - id: govulncheck
           uses: golang/govulncheck-action@v1
           with:
-            go-version-input: 1.21.6
+            go-version-input: 1.24.4
             go-package: ./...

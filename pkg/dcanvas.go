@@ -12,13 +12,13 @@ import (
 )
 
 type DCanvas struct {
+	img         *image.RGBA
+	TypeContext *freetype.Context
+	Font        *truetype.Font
 	Width       int
 	Height      int
 	X           int
 	Y           int
-	img         *image.RGBA
-	TypeContext *freetype.Context
-	Font        *truetype.Font
 }
 
 // New creates a new canvas with the given width and height.
