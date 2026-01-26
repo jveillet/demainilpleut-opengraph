@@ -21,6 +21,12 @@ Clone the repository.
 git clone https://github.com/jveillet/demainilpleut-opengraph.git
 ```
 
+Install dependencies.
+
+```bash
+go get -u ./...
+```
+
 Build the binary.
 
 ```bash
